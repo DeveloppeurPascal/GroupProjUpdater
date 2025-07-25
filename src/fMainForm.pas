@@ -263,7 +263,7 @@ end;
 
 procedure TMainForm.btnSelectProjectsRootFolderClick(Sender: TObject);
 begin
-// TODO : à compléter
+  // TODO : à compléter
 end;
 
 procedure TMainForm.btnUnselectAllFoundProjectsClick(Sender: TObject);
@@ -285,7 +285,7 @@ end;
 procedure TMainForm.EditGroupProj;
 begin
   // TODO : init fields
-
+    // TODO : adapter la taille des 2 layouts
   TabControl1.ActiveTab := tiEdit;
 end;
 
@@ -312,29 +312,51 @@ begin
   begin
     btnNewGroup.Text := 'Nouveau groupe de projets';
     btnOpenGroup.Text := 'Ouvrir un groupe de projets';
-    btnSave.Text := '';
-    btnClose.Text := '';
-    btnQuit.Text := '';
-    lblCurrentProjectsGroup.Text := '';
-    lblProjectsInGroup.Text := '';
-    btnSelectAllProjectsFromGroup.Text := '';
-    btnSelectDelphiProjectsFromGroup.Text := '';
-    btnSelectCBuilderProjectsFromGroup.Text := '';
-    btnUnselectAllProjectsFromGroup.Text := '';
-    btnRemoveProjectFromGroup.Text := '';
-    lblProjectsRootFolder.Text := '';
-    btnSelectProjectsRootFolder.Text := '';
-    lblFoundProjects.Text := '';
-    btnSelectAllFoundProjects.Text := '';
-    btnSelectDelphiFoundProjects.Text := '';
-    btnSelectCBuilderFoundProjects.Text := '';
-    btnUnselectAllFoundProjects.Text := '';
-    btnAddProjectsToGroup.Text := '';
+    btnSave.Text := 'Enregistrer';
+    btnClose.Text := 'Fermer';
+    btnQuit.Text := 'Quitter';
+    lblCurrentProjectsGroup.Text := 'Groupe de projets';
+    lblProjectsInGroup.Text := 'Projets du groupe';
+    btnSelectAllProjectsFromGroup.Text := 'Tout sélectionner';
+    btnSelectDelphiProjectsFromGroup.Text := 'Delphi';
+    btnSelectCBuilderProjectsFromGroup.Text := 'C++Builder';
+    btnUnselectAllProjectsFromGroup.Text := 'Désélectionner tout';
+    btnRemoveProjectFromGroup.Text := 'Retirer du groupe';
+    lblProjectsRootFolder.Text := 'Dossier des projets';
+    btnSelectProjectsRootFolder.Text := '...';
+    btnSelectProjectsRootFolder.Hint := 'Choisir un dossier';
+    lblFoundProjects.Text := 'Projets trouvés';
+    btnSelectAllFoundProjects.Text := btnSelectAllProjectsFromGroup.Text;
+    btnSelectDelphiFoundProjects.Text := btnSelectDelphiProjectsFromGroup.Text;
+    btnSelectCBuilderFoundProjects.Text :=
+      btnSelectCBuilderProjectsFromGroup.Text;
+    btnUnselectAllFoundProjects.Text := btnUnselectAllProjectsFromGroup.Text;
+    btnAddProjectsToGroup.Text := 'Ajouter au groupe';
   end
   else
   begin
     btnNewGroup.Text := 'New projects group';
     btnOpenGroup.Text := 'Open a projects group';
+    btnSave.Text := 'Save';
+    btnClose.Text := 'Close';
+    btnQuit.Text := 'Quit';
+    lblCurrentProjectsGroup.Text := 'Projects group';
+    lblProjectsInGroup.Text := 'Projects in the group';
+    btnSelectAllProjectsFromGroup.Text := 'Select all';
+    btnSelectDelphiProjectsFromGroup.Text := 'Delphi';
+    btnSelectCBuilderProjectsFromGroup.Text := 'C++Builder';
+    btnUnselectAllProjectsFromGroup.Text := 'Unselect all';
+    btnRemoveProjectFromGroup.Text := 'Remove from group';
+    lblProjectsRootFolder.Text := 'Projects folder';
+    btnSelectProjectsRootFolder.Text := '...';
+    btnSelectProjectsRootFolder.Hint := 'Choose a folder';
+    lblFoundProjects.Text := 'Found projects';
+    btnSelectAllFoundProjects.Text := btnSelectAllProjectsFromGroup.Text;
+    btnSelectDelphiFoundProjects.Text := btnSelectDelphiProjectsFromGroup.Text;
+    btnSelectCBuilderFoundProjects.Text :=
+      btnSelectCBuilderProjectsFromGroup.Text;
+    btnUnselectAllFoundProjects.Text := btnUnselectAllProjectsFromGroup.Text;
+    btnAddProjectsToGroup.Text := 'Add to group';
   end;
 end;
 

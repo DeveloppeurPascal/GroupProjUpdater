@@ -29,6 +29,8 @@ inherited MainForm: TMainForm
       StyleLookup = ''
       TabOrder = 0
       Text = 'tiOpenCreate'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
       object GridPanelLayout1: TGridPanelLayout
         Align = Center
         Size.Width = 200.000000000000000000
@@ -99,6 +101,8 @@ inherited MainForm: TMainForm
       StyleLookup = ''
       TabOrder = 0
       Text = 'tiEdit'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
       object tbMain: TToolBar
         Align = MostTop
         Size.Width = 1042.000000000000000000
@@ -200,7 +204,7 @@ inherited MainForm: TMainForm
             Margins.Bottom = 5.000000000000000000
             Position.X = 5.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
@@ -214,9 +218,9 @@ inherited MainForm: TMainForm
             Margins.Top = 5.000000000000000000
             Margins.Right = 5.000000000000000000
             Margins.Bottom = 5.000000000000000000
-            Position.X = 95.000000000000000000
+            Position.X = 175.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 1
@@ -230,9 +234,9 @@ inherited MainForm: TMainForm
             Margins.Top = 5.000000000000000000
             Margins.Right = 5.000000000000000000
             Margins.Bottom = 5.000000000000000000
-            Position.X = 185.000000000000000000
+            Position.X = 345.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 2
@@ -246,9 +250,9 @@ inherited MainForm: TMainForm
             Margins.Top = 5.000000000000000000
             Margins.Right = 5.000000000000000000
             Margins.Bottom = 5.000000000000000000
-            Position.X = 275.000000000000000000
+            Position.X = 515.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 3
@@ -262,9 +266,9 @@ inherited MainForm: TMainForm
             Margins.Top = 5.000000000000000000
             Margins.Right = 5.000000000000000000
             Margins.Bottom = 5.000000000000000000
-            Position.X = 365.000000000000000000
+            Position.X = 685.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 4
@@ -366,7 +370,7 @@ inherited MainForm: TMainForm
             Margins.Bottom = 5.000000000000000000
             Position.X = 5.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
@@ -380,9 +384,9 @@ inherited MainForm: TMainForm
             Margins.Top = 5.000000000000000000
             Margins.Right = 5.000000000000000000
             Margins.Bottom = 5.000000000000000000
-            Position.X = 365.000000000000000000
+            Position.X = 685.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 4
@@ -396,9 +400,9 @@ inherited MainForm: TMainForm
             Margins.Top = 5.000000000000000000
             Margins.Right = 5.000000000000000000
             Margins.Bottom = 5.000000000000000000
-            Position.X = 275.000000000000000000
+            Position.X = 515.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 3
@@ -412,9 +416,9 @@ inherited MainForm: TMainForm
             Margins.Top = 5.000000000000000000
             Margins.Right = 5.000000000000000000
             Margins.Bottom = 5.000000000000000000
-            Position.X = 185.000000000000000000
+            Position.X = 345.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 2
@@ -428,9 +432,9 @@ inherited MainForm: TMainForm
             Margins.Top = 5.000000000000000000
             Margins.Right = 5.000000000000000000
             Margins.Bottom = 5.000000000000000000
-            Position.X = 95.000000000000000000
+            Position.X = 175.000000000000000000
             Position.Y = 5.000000000000000000
-            Size.Width = 80.000000000000000000
+            Size.Width = 160.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 1
@@ -451,21 +455,21 @@ inherited MainForm: TMainForm
       end
     end
   end
-  object OpenDialog1: TOpenDialog
+  object OpenDialog1: TOpenDialog [2]
     DefaultExt = '*.groupproj'
     Filter = 'Project Group (*.groupproj)|*.groupproj'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 120
     Top = 256
   end
-  object SaveDialog1: TSaveDialog
+  object SaveDialog1: TSaveDialog [3]
     DefaultExt = '.groupproj'
     Filter = 'Project group (*.groupproj)|*.groupproj'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Left = 104
     Top = 192
   end
-  object OlfSelectDirectoryDialog1: TOlfSelectDirectoryDialog
+  object OlfSelectDirectoryDialog1: TOlfSelectDirectoryDialog [4]
     Root = ''
     Left = 504
     Top = 288
