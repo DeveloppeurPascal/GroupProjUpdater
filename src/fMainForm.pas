@@ -65,7 +65,10 @@ uses
   FMX.TabControl,
   FMX.Edit,
   FMX.ListBox,
-  Olf.FMX.SelectDirectory;
+  Olf.FMX.SelectDirectory,
+  Xml.xmldom,
+  Xml.XMLIntf,
+  Xml.XMLDoc;
 
 type
   TMainForm = class(T__MainFormAncestor)
@@ -106,6 +109,8 @@ type
     btnUnselectAllProjectsFromGroup: TButton;
     btnRemoveProjectFromGroup: TButton;
     OlfSelectDirectoryDialog1: TOlfSelectDirectoryDialog;
+    btnCancel: TButton;
+    XMLDocument1: TXMLDocument;
     procedure FormCreate(Sender: TObject);
     procedure btnNewGroupClick(Sender: TObject);
     procedure btnOpenGroupClick(Sender: TObject);
@@ -124,9 +129,11 @@ type
     procedure btnAddProjectsToGroupClick(Sender: TObject);
     procedure btnSelectProjectsRootFolderClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure btnCancelClick(Sender: TObject);
   private
   protected
     FGroupHasChanged: Boolean;
+    FProjectGroupGuid: string;
     function GetNewDoc(const FileName: string = ''): TDocumentAncestor;
       override;
     procedure OpenGroupProj(const AFileName: string);
@@ -195,11 +202,19 @@ begin
   MoveItemsToList(lbFoundProjects, lbProjectsInGroup, '');
 end;
 
+procedure TMainForm.btnCancelClick(Sender: TObject);
+begin
+  if tfile.Exists(edtCurrentProjectsGroup.Text) then
+    OpenGroupProj(edtCurrentProjectsGroup.Text)
+  else
+    CreateGroupProj(edtCurrentProjectsGroup.Text);
+end;
+
 procedure TMainForm.btnCloseClick(Sender: TObject);
 begin
   if FGroupHasChanged then
   begin
-    ShowMessage('Group changed, please save it before closing.');
+    ShowMessage('Group changed, please save or cancel it before closing.');
     // TODO : à remplacer par un OUI/NON
     abort;
   end
@@ -360,6 +375,7 @@ begin
   EditGroupProj;
 
   edtCurrentProjectsGroup.Text := AFileName;
+  FProjectGroupGuid := tguid.NewGuid.ToString;
 
   edtProjectsRootFolder.Text := tpath.GetDirectoryName(AFileName);
   SearchProjectsInFolder(edtProjectsRootFolder.Text);
@@ -396,6 +412,15 @@ end;
 
 procedure TMainForm.ExportProjectsGroup(const AFromList: TListBox;
   const AToFileName: string);
+  function Space(const Nb: integer): string;
+  var
+    i: integer;
+  begin
+    result := '';
+    for i := 1 to Nb do
+      result := result + ' ';
+  end;
+
 var
   GroupProj: TStringList;
   i: integer;
@@ -406,30 +431,31 @@ begin
   try
     GroupProj.Add
       ('<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">');
-    GroupProj.Add('<PropertyGroup>');
-    GroupProj.Add('<ProjectGuid>' + tguid.NewGuid.ToString + '</ProjectGuid>');
-    GroupProj.Add('</PropertyGroup>');
-    GroupProj.Add('<ItemGroup>');
+    GroupProj.Add(Space(4) + '<PropertyGroup>');
+    GroupProj.Add(Space(8) + '<ProjectGuid>' + FProjectGroupGuid +
+      '</ProjectGuid>');
+    GroupProj.Add(Space(4) + '</PropertyGroup>');
+    GroupProj.Add(Space(4) + '<ItemGroup>');
     for i := 0 to AFromList.count - 1 do
     begin
       ProjectPath := AFromList.ListItems[i].TagString;
       ProjectRelPath := AFromList.ListItems[i].Text;
       if (not ProjectPath.IsEmpty) and tfile.Exists(ProjectPath) then
       begin
-        GroupProj.Add('<Projects Include="' + ProjectRelPath + '">');
-        GroupProj.Add('<Dependencies/>');
-        GroupProj.Add('</Projects>');
+        GroupProj.Add(Space(8) + '<Projects Include="' + ProjectRelPath + '">');
+        GroupProj.Add(Space(12) + '<Dependencies/>');
+        GroupProj.Add(Space(8) + '</Projects>');
       end;
     end;
-    GroupProj.Add('</ItemGroup>');
-    GroupProj.Add('<ProjectExtensions>');
-    GroupProj.Add
-      ('<Borland.Personality>Default.Personality.12</Borland.Personality>');
-    GroupProj.Add('<Borland.ProjectType/>');
-    GroupProj.Add('<BorlandProject>');
-    GroupProj.Add('<Default.Personality/>');
-    GroupProj.Add('</BorlandProject>');
-    GroupProj.Add('</ProjectExtensions>');
+    GroupProj.Add(Space(4) + '</ItemGroup>');
+    GroupProj.Add(Space(4) + '<ProjectExtensions>');
+    GroupProj.Add(Space(8) +
+      '<Borland.Personality>Default.Personality.12</Borland.Personality>');
+    GroupProj.Add(Space(8) + '<Borland.ProjectType/>');
+    GroupProj.Add(Space(8) + '<BorlandProject>');
+    GroupProj.Add(Space(12) + '<Default.Personality/>');
+    GroupProj.Add(Space(8) + '</BorlandProject>');
+    GroupProj.Add(Space(4) + '</ProjectExtensions>');
     Targets := '';
     for i := 0 to AFromList.count - 1 do
     begin
@@ -439,17 +465,18 @@ begin
       begin
         ProjectName := tpath.GetFileNameWithoutExtension(ProjectPath);
         // TODO : check if the name is already in targets list
-        GroupProj.Add('<Target Name="' + ProjectName + '">');
-        GroupProj.Add('<MSBuild Projects="' + ProjectRelPath + '"/>');
-        GroupProj.Add('</Target>');
-        GroupProj.Add('<Target Name="' + ProjectName + ':Clean">');
-        GroupProj.Add('<MSBuild Projects="' + ProjectRelPath +
+        GroupProj.Add(Space(4) + '<Target Name="' + ProjectName + '">');
+        GroupProj.Add(Space(8) + '<MSBuild Projects="' + ProjectRelPath
+          + '"/>');
+        GroupProj.Add(Space(4) + '</Target>');
+        GroupProj.Add(Space(4) + '<Target Name="' + ProjectName + ':Clean">');
+        GroupProj.Add(Space(8) + '<MSBuild Projects="' + ProjectRelPath +
           '" Targets="Clean"/>');
-        GroupProj.Add('</Target>');
-        GroupProj.Add('<Target Name="' + ProjectName + ':Make">');
-        GroupProj.Add('<MSBuild Projects="' + ProjectRelPath +
+        GroupProj.Add(Space(4) + '</Target>');
+        GroupProj.Add(Space(4) + '<Target Name="' + ProjectName + ':Make">');
+        GroupProj.Add(Space(8) + '<MSBuild Projects="' + ProjectRelPath +
           '" Targets="Make"/>');
-        GroupProj.Add('</Target>');
+        GroupProj.Add(Space(4) + '</Target>');
         if Targets.IsEmpty then
         begin
           Targets := ProjectName;
@@ -464,17 +491,17 @@ begin
         end;
       end;
     end;
-    GroupProj.Add('<Target Name="Build">');
-    GroupProj.Add('<CallTarget Targets="' + Targets + '"/>');
-    GroupProj.Add('</Target>');
-    GroupProj.Add('<Target Name="Clean">');
-    GroupProj.Add('<CallTarget Targets="' + CleanTargets + '"/>');
-    GroupProj.Add('</Target>');
-    GroupProj.Add('<Target Name="Make">');
-    GroupProj.Add('<CallTarget Targets="' + MakeTargets + '"/>');
-    GroupProj.Add('</Target>');
-    GroupProj.Add
-      ('<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists(''$(BDS)\Bin\CodeGear.Group.Targets'')"/>');
+    GroupProj.Add(Space(4) + '<Target Name="Build">');
+    GroupProj.Add(Space(8) + '<CallTarget Targets="' + Targets + '"/>');
+    GroupProj.Add(Space(4) + '</Target>');
+    GroupProj.Add(Space(4) + '<Target Name="Clean">');
+    GroupProj.Add(Space(8) + '<CallTarget Targets="' + CleanTargets + '"/>');
+    GroupProj.Add(Space(4) + '</Target>');
+    GroupProj.Add(Space(4) + '<Target Name="Make">');
+    GroupProj.Add(Space(8) + '<CallTarget Targets="' + MakeTargets + '"/>');
+    GroupProj.Add(Space(4) + '</Target>');
+    GroupProj.Add(Space(4) +
+      '<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists(''$(BDS)\Bin\CodeGear.Group.Targets'')"/>');
     GroupProj.Add('</Project>');
 
     GroupProj.savetofile(AToFileName);
@@ -504,15 +531,41 @@ begin
 end;
 
 procedure TMainForm.OpenGroupProj(const AFileName: string);
+var
+  Projects: IXMLNodeList;
+  i: integer;
+  item: TListBoxItem;
+  GroupProjPath: string;
 begin
-  EditGroupProj;
+  try
+    EditGroupProj;
 
-  edtCurrentProjectsGroup.Text := AFileName;
+    edtCurrentProjectsGroup.Text := AFileName;
 
-  // TODO : charger + afficher la liste des projets du groupe
+    GroupProjPath := tpath.GetDirectoryName(AFileName);
 
-  edtProjectsRootFolder.Text := tpath.GetDirectoryName(AFileName);
-  SearchProjectsInFolder(edtProjectsRootFolder.Text);
+    XMLDocument1.LoadFromFile(AFileName);
+    FProjectGroupGuid := XMLDocument1.ChildNodes.FindNode('Project')
+      .ChildNodes.FindNode('PropertyGroup').ChildNodes.FindNode('ProjectGuid')
+      .NodeValue;
+    Projects := XMLDocument1.ChildNodes.FindNode('Project')
+      .ChildNodes.FindNode('ItemGroup').ChildNodes;
+    for i := 0 to Projects.count - 1 do
+      if (comparetext(Projects[i].NodeName, 'Projects') = 0) and
+        Projects[i].HasAttribute('Include') then
+      begin
+        item := TListBoxItem.Create(self);
+        item.Text := Projects[i].Attributes['Include'];
+        item.TagString := tpath.combine(GroupProjPath, item.Text);
+        lbProjectsInGroup.AddObject(item);
+      end;
+
+    edtProjectsRootFolder.Text := tpath.GetDirectoryName(AFileName);
+    SearchProjectsInFolder(edtProjectsRootFolder.Text);
+  except
+    TabControl1.ActiveTab := tiOpenCreate;
+    raise;
+  end;
 end;
 
 procedure TMainForm.SearchProjectsInFolder(const AFolderPath: string);
@@ -588,6 +641,7 @@ begin
     btnNewGroup.Text := 'Nouveau groupe de projets';
     btnOpenGroup.Text := 'Ouvrir un groupe de projets';
     btnSave.Text := 'Enregistrer';
+    btnCancel.Text := 'Annuler';
     btnClose.Text := 'Fermer';
     btnQuit.Text := 'Quitter';
     lblCurrentProjectsGroup.Text := 'Groupe de projets';
@@ -614,6 +668,7 @@ begin
     btnNewGroup.Text := 'New projects group';
     btnOpenGroup.Text := 'Open a projects group';
     btnSave.Text := 'Save';
+    btnCancel.Text := 'Cancel';
     btnClose.Text := 'Close';
     btnQuit.Text := 'Quit';
     lblCurrentProjectsGroup.Text := 'Projects group';
