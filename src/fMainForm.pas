@@ -57,16 +57,79 @@ uses
   System.Actions,
   FMX.ActnList,
   FMX.Menus,
-  uDocumentsAncestor;
+  uDocumentsAncestor,
+  FMX.Controls.Presentation,
+  FMX.Layouts,
+  FMX.TabControl,
+  FMX.Edit,
+  FMX.ListBox,
+  Olf.FMX.SelectDirectory;
 
 type
   TMainForm = class(T__MainFormAncestor)
+    TabControl1: TTabControl;
+    tiOpenCreate: TTabItem;
+    GridPanelLayout1: TGridPanelLayout;
+    btnNewGroup: TButton;
+    btnOpenGroup: TButton;
+    tiEdit: TTabItem;
+    OpenDialog1: TOpenDialog;
+    SaveDialog1: TSaveDialog;
+    tbMain: TToolBar;
+    lblCurrentProjectsGroup: TLabel;
+    edtCurrentProjectsGroup: TEdit;
+    lblProjectsInGroup: TLabel;
+    lbProjectsInGroup: TListBox;
+    lblProjectsRootFolder: TLabel;
+    edtProjectsRootFolder: TEdit;
+    btnSelectProjectsRootFolder: TEditButton;
+    lblFoundProjects: TLabel;
+    lbFoundProjects: TListBox;
+    lProjectsGroup: TLayout;
+    lProjectsFound: TLayout;
+    Splitter1: TSplitter;
+    tbFoundProjects: TToolBar;
+    btnSave: TButton;
+    btnClose: TButton;
+    btnQuit: TButton;
+    btnSelectAllFoundProjects: TButton;
+    btnAddProjectsToGroup: TButton;
+    btnUnselectAllFoundProjects: TButton;
+    btnSelectCBuilderFoundProjects: TButton;
+    btnSelectDelphiFoundProjects: TButton;
+    tbProjectsGroup: TToolBar;
+    btnSelectAllProjectsFromGroup: TButton;
+    btnSelectDelphiProjectsFromGroup: TButton;
+    btnSelectCBuilderProjectsFromGroup: TButton;
+    btnUnselectAllProjectsFromGroup: TButton;
+    btnRemoveProjectFromGroup: TButton;
+    OlfSelectDirectoryDialog1: TOlfSelectDirectoryDialog;
+    procedure FormCreate(Sender: TObject);
+    procedure btnNewGroupClick(Sender: TObject);
+    procedure btnOpenGroupClick(Sender: TObject);
+    procedure btnSaveClick(Sender: TObject);
+    procedure btnCloseClick(Sender: TObject);
+    procedure btnQuitClick(Sender: TObject);
+    procedure btnSelectAllProjectsFromGroupClick(Sender: TObject);
+    procedure btnSelectDelphiProjectsFromGroupClick(Sender: TObject);
+    procedure btnSelectCBuilderProjectsFromGroupClick(Sender: TObject);
+    procedure btnUnselectAllProjectsFromGroupClick(Sender: TObject);
+    procedure btnRemoveProjectFromGroupClick(Sender: TObject);
+    procedure btnSelectAllFoundProjectsClick(Sender: TObject);
+    procedure btnSelectDelphiFoundProjectsClick(Sender: TObject);
+    procedure btnSelectCBuilderFoundProjectsClick(Sender: TObject);
+    procedure btnUnselectAllFoundProjectsClick(Sender: TObject);
+    procedure btnAddProjectsToGroupClick(Sender: TObject);
+    procedure btnSelectProjectsRootFolderClick(Sender: TObject);
   private
   protected
     function GetNewDoc(const FileName: string = ''): TDocumentAncestor;
       override;
+    procedure OpenGroupProj(const AFileName: string);
+    procedure CreateGroupProj(const AFileName: string);
+    procedure EditGroupProj;
   public
-
+    procedure TranslateTexts(const Language: string); override;
   end;
 
 var
@@ -75,14 +138,204 @@ var
 implementation
 
 {$R *.fmx}
-{ TMainForm }
+
+uses
+  System.IOUtils;
+
+procedure TMainForm.btnAddProjectsToGroupClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnCloseClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnNewGroupClick(Sender: TObject);
+var
+  InitialDir: String;
+begin
+  if SaveDialog1.InitialDir.IsEmpty then
+  begin
+{$IF Defined(MSWINDOWS)}
+    // TODO : récupérer le dossier des projets par défaut depuis BDSPROJECTSDIR dans la clé "Ordinateur\HKEY_CURRENT_USER\Software\Embarcadero\BDS\23.0\Environment Variables" de la base de registres de Windows
+{$ENDIF}
+    InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero', 'Studio',
+      'Projects');
+    if not TDirectory.Exists(InitialDir) then
+      InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero',
+        'Studio', 'Projets');
+    // TODO : tester les autres versions traduites de "Projects"
+    if not TDirectory.Exists(InitialDir) then
+      InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero',
+        'Studio');
+
+    if TDirectory.Exists(InitialDir) then
+      SaveDialog1.InitialDir := InitialDir
+    else
+      SaveDialog1.InitialDir := tpath.GetDocumentsPath;
+  end;
+
+  if SaveDialog1.Execute and (not string(SaveDialog1.FileName).IsEmpty) then
+    if tfile.Exists(SaveDialog1.FileName) then
+      OpenGroupProj(SaveDialog1.FileName)
+    else
+      CreateGroupProj(SaveDialog1.FileName);
+end;
+
+procedure TMainForm.btnOpenGroupClick(Sender: TObject);
+var
+  InitialDir: String;
+begin
+  if OpenDialog1.InitialDir.IsEmpty then
+  begin
+{$IF Defined(MSWINDOWS)}
+    // TODO : récupérer le dossier des projets par défaut depuis BDSPROJECTSDIR dans la clé "Ordinateur\HKEY_CURRENT_USER\Software\Embarcadero\BDS\23.0\Environment Variables" de la base de registres de Windows
+{$ENDIF}
+    InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero', 'Studio',
+      'Projects');
+    if not TDirectory.Exists(InitialDir) then
+      InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero',
+        'Studio', 'Projets');
+    // TODO : tester les autres versions traduites de "Projects"
+    if not TDirectory.Exists(InitialDir) then
+      InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero',
+        'Studio');
+
+    if TDirectory.Exists(InitialDir) then
+      OpenDialog1.InitialDir := InitialDir
+    else
+      OpenDialog1.InitialDir := tpath.GetDocumentsPath;
+  end;
+
+  if OpenDialog1.Execute and (not string(OpenDialog1.FileName).IsEmpty) then
+    if tfile.Exists(OpenDialog1.FileName) then
+      OpenGroupProj(OpenDialog1.FileName)
+    else
+      CreateGroupProj(OpenDialog1.FileName);
+end;
+
+procedure TMainForm.btnQuitClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnRemoveProjectFromGroupClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnSaveClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnSelectAllFoundProjectsClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnSelectAllProjectsFromGroupClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnSelectCBuilderFoundProjectsClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnSelectCBuilderProjectsFromGroupClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnSelectDelphiFoundProjectsClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnSelectDelphiProjectsFromGroupClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnSelectProjectsRootFolderClick(Sender: TObject);
+begin
+// TODO : à compléter
+end;
+
+procedure TMainForm.btnUnselectAllFoundProjectsClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.btnUnselectAllProjectsFromGroupClick(Sender: TObject);
+begin
+  // TODO : à compléter
+end;
+
+procedure TMainForm.CreateGroupProj(const AFileName: string);
+begin
+  EditGroupProj;
+  // TODO : à compléter
+end;
+
+procedure TMainForm.EditGroupProj;
+begin
+  // TODO : init fields
+
+  TabControl1.ActiveTab := tiEdit;
+end;
+
+procedure TMainForm.FormCreate(Sender: TObject);
+begin
+  TabControl1.ActiveTab := tiOpenCreate;
+end;
 
 function TMainForm.GetNewDoc(const FileName: string): TDocumentAncestor;
 begin
-{$MESSAGE WARN 'Create an instance of your document and remove this comment.'}
-  // TODO : Create an instance of your document and remove this comment
-  // result := TYourDocumentType.Create;
   result := nil;
+end;
+
+procedure TMainForm.OpenGroupProj(const AFileName: string);
+begin
+  EditGroupProj;
+  // TODO : à compléter
+end;
+
+procedure TMainForm.TranslateTexts(const Language: string);
+begin
+  inherited;
+  if Language = 'fr' then
+  begin
+    btnNewGroup.Text := 'Nouveau groupe de projets';
+    btnOpenGroup.Text := 'Ouvrir un groupe de projets';
+    btnSave.Text := '';
+    btnClose.Text := '';
+    btnQuit.Text := '';
+    lblCurrentProjectsGroup.Text := '';
+    lblProjectsInGroup.Text := '';
+    btnSelectAllProjectsFromGroup.Text := '';
+    btnSelectDelphiProjectsFromGroup.Text := '';
+    btnSelectCBuilderProjectsFromGroup.Text := '';
+    btnUnselectAllProjectsFromGroup.Text := '';
+    btnRemoveProjectFromGroup.Text := '';
+    lblProjectsRootFolder.Text := '';
+    btnSelectProjectsRootFolder.Text := '';
+    lblFoundProjects.Text := '';
+    btnSelectAllFoundProjects.Text := '';
+    btnSelectDelphiFoundProjects.Text := '';
+    btnSelectCBuilderFoundProjects.Text := '';
+    btnUnselectAllFoundProjects.Text := '';
+    btnAddProjectsToGroup.Text := '';
+  end
+  else
+  begin
+    btnNewGroup.Text := 'New projects group';
+    btnOpenGroup.Text := 'Open a projects group';
+  end;
 end;
 
 end.
