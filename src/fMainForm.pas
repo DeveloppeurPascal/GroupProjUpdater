@@ -38,8 +38,10 @@ unit fMainForm;
 
 interface
 
-{$MESSAGE WARN 'Save this file to your project directory. It''s your main form.'}
-// TODO : Save this file to your project directory. It's your main form.
+// TODO : ajouter un enregistrement de la taille de la fenêtre et un paramètre autorisant son enregistrement (peut-être au niveau du starter kit)
+// TODO : si on utilise le splitter, enregistrer le prorata des 2 layouts pour le restituer à l'affichage suivant
+// TODO : impacter la barre de titre du programme selon l'ouverture ou la fermeture d'un groupe
+// TODO : impacter la barre de titre du programme selon le changement d'état (modifié ou pas) du groupe en cours
 
 uses
   System.SysUtils,
@@ -121,13 +123,24 @@ type
     procedure btnUnselectAllFoundProjectsClick(Sender: TObject);
     procedure btnAddProjectsToGroupClick(Sender: TObject);
     procedure btnSelectProjectsRootFolderClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
   protected
+    FGroupHasChanged: Boolean;
     function GetNewDoc(const FileName: string = ''): TDocumentAncestor;
       override;
     procedure OpenGroupProj(const AFileName: string);
     procedure CreateGroupProj(const AFileName: string);
     procedure EditGroupProj;
+    procedure SelectItemsFromList(const AListBox: TListBox;
+      const Delphi, CBuilder: Boolean);
+    procedure UnselectAllItemsFromList(const AListBox: TListBox);
+    procedure MoveItemsToList(const AFromListBox, AToListBox: TListBox;
+      const ARootFolder: string);
+    function DefaultEmbarcaderoProjectsDirectory: string;
+    procedure SearchProjectsInFolder(const AFolderPath: string);
+    procedure ExportProjectsGroup(const AFromList: TListBox;
+      const AToFileName: string);
   public
     procedure TranslateTexts(const Language: string); override;
   end;
@@ -142,14 +155,56 @@ implementation
 uses
   System.IOUtils;
 
+// TODO : remplacer GetRelativePath() par la version de DeveloppeurPascal/Librairies
+function GetRelativePath(const ForPath, CurrentPath: string): string;
+var
+  i, j: integer;
+begin
+  i := 0;
+  j := 0;
+  while (i < length(ForPath)) and (i < length(CurrentPath)) and
+    (ForPath.Chars[i] = CurrentPath.Chars[i]) do
+  begin
+    if ForPath.Chars[i] = tpath.DirectorySeparatorChar then
+      j := i;
+    inc(i);
+  end;
+  if (i < length(ForPath)) or ((i < length(CurrentPath)) and
+    (CurrentPath.Chars[i] <> tpath.DirectorySeparatorChar)) then
+  begin
+    result := ForPath.Substring(j + 1);
+    i := j + 1;
+  end
+  else
+    result := '';
+  while (i < length(CurrentPath)) do
+  begin
+    if CurrentPath.Chars[i] = tpath.DirectorySeparatorChar then
+      if result.IsEmpty then
+        result := '.' + tpath.DirectorySeparatorChar
+      else if result = '.' + tpath.DirectorySeparatorChar then
+        result := '.' + result
+      else
+        result := '..' + tpath.DirectorySeparatorChar + result;
+    inc(i);
+  end;
+end;
+
 procedure TMainForm.btnAddProjectsToGroupClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  MoveItemsToList(lbFoundProjects, lbProjectsInGroup, '');
 end;
 
 procedure TMainForm.btnCloseClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  if FGroupHasChanged then
+  begin
+    ShowMessage('Group changed, please save it before closing.');
+    // TODO : à remplacer par un OUI/NON
+    abort;
+  end
+  else
+    TabControl1.ActiveTab := tiOpenCreate;
 end;
 
 procedure TMainForm.btnNewGroupClick(Sender: TObject);
@@ -158,18 +213,7 @@ var
 begin
   if SaveDialog1.InitialDir.IsEmpty then
   begin
-{$IF Defined(MSWINDOWS)}
-    // TODO : récupérer le dossier des projets par défaut depuis BDSPROJECTSDIR dans la clé "Ordinateur\HKEY_CURRENT_USER\Software\Embarcadero\BDS\23.0\Environment Variables" de la base de registres de Windows
-{$ENDIF}
-    InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero', 'Studio',
-      'Projects');
-    if not TDirectory.Exists(InitialDir) then
-      InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero',
-        'Studio', 'Projets');
-    // TODO : tester les autres versions traduites de "Projects"
-    if not TDirectory.Exists(InitialDir) then
-      InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero',
-        'Studio');
+    InitialDir := DefaultEmbarcaderoProjectsDirectory;
 
     if TDirectory.Exists(InitialDir) then
       SaveDialog1.InitialDir := InitialDir
@@ -190,18 +234,7 @@ var
 begin
   if OpenDialog1.InitialDir.IsEmpty then
   begin
-{$IF Defined(MSWINDOWS)}
-    // TODO : récupérer le dossier des projets par défaut depuis BDSPROJECTSDIR dans la clé "Ordinateur\HKEY_CURRENT_USER\Software\Embarcadero\BDS\23.0\Environment Variables" de la base de registres de Windows
-{$ENDIF}
-    InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero', 'Studio',
-      'Projects');
-    if not TDirectory.Exists(InitialDir) then
-      InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero',
-        'Studio', 'Projets');
-    // TODO : tester les autres versions traduites de "Projects"
-    if not TDirectory.Exists(InitialDir) then
-      InitialDir := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero',
-        'Studio');
+    InitialDir := DefaultEmbarcaderoProjectsDirectory;
 
     if TDirectory.Exists(InitialDir) then
       OpenDialog1.InitialDir := InitialDir
@@ -218,75 +251,246 @@ end;
 
 procedure TMainForm.btnQuitClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  close;
 end;
 
 procedure TMainForm.btnRemoveProjectFromGroupClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  MoveItemsToList(lbProjectsInGroup, lbFoundProjects, edtProjectsRootFolder.Text
+    + tpath.DirectorySeparatorChar);
 end;
 
 procedure TMainForm.btnSaveClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  // TODO : contrôler l'unicité des noms de projets avant export
+  ExportProjectsGroup(lbProjectsInGroup, edtCurrentProjectsGroup.Text);
+  FGroupHasChanged := false;
 end;
 
 procedure TMainForm.btnSelectAllFoundProjectsClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  SelectItemsFromList(lbFoundProjects, true, true);
 end;
 
 procedure TMainForm.btnSelectAllProjectsFromGroupClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  SelectItemsFromList(lbProjectsInGroup, true, true);
 end;
 
 procedure TMainForm.btnSelectCBuilderFoundProjectsClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  SelectItemsFromList(lbFoundProjects, false, true);
 end;
 
 procedure TMainForm.btnSelectCBuilderProjectsFromGroupClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  SelectItemsFromList(lbProjectsInGroup, false, true);
 end;
 
 procedure TMainForm.btnSelectDelphiFoundProjectsClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  SelectItemsFromList(lbFoundProjects, true, false);
 end;
 
 procedure TMainForm.btnSelectDelphiProjectsFromGroupClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  SelectItemsFromList(lbProjectsInGroup, true, false);
 end;
 
 procedure TMainForm.btnSelectProjectsRootFolderClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  if not edtProjectsRootFolder.Text.IsEmpty then
+    OlfSelectDirectoryDialog1.Directory := edtProjectsRootFolder.Text
+  else if (not edtCurrentProjectsGroup.Text.IsEmpty) then
+    OlfSelectDirectoryDialog1.Directory :=
+      tpath.GetDirectoryName(edtCurrentProjectsGroup.Text)
+  else
+    OlfSelectDirectoryDialog1.Directory := DefaultEmbarcaderoProjectsDirectory;
+
+  if OlfSelectDirectoryDialog1.Execute and
+    (not OlfSelectDirectoryDialog1.Directory.IsEmpty) and
+    TDirectory.Exists(OlfSelectDirectoryDialog1.Directory) then
+  begin
+    edtProjectsRootFolder.Text := OlfSelectDirectoryDialog1.Directory;
+    SearchProjectsInFolder(OlfSelectDirectoryDialog1.Directory);
+  end;
 end;
 
 procedure TMainForm.btnUnselectAllFoundProjectsClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  UnselectAllItemsFromList(lbFoundProjects);
 end;
 
 procedure TMainForm.btnUnselectAllProjectsFromGroupClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  UnselectAllItemsFromList(lbProjectsInGroup);
+end;
+
+procedure TMainForm.MoveItemsToList(const AFromListBox, AToListBox: TListBox;
+  const ARootFolder: string);
+var
+  i: integer;
+  item: TListBoxItem;
+  GroupProjectPath: string;
+begin
+  GroupProjectPath := tpath.GetDirectoryName(edtCurrentProjectsGroup.Text) +
+    tpath.DirectorySeparatorChar;
+
+  for i := AFromListBox.count - 1 downto 0 do
+    if AFromListBox.ListItems[i].IsChecked then
+    begin
+      item := AFromListBox.ListItems[i];
+      AFromListBox.RemoveObject(item);
+
+      if ARootFolder.IsEmpty or item.TagString.StartsWith(ARootFolder) then
+      begin
+        item.IsChecked := false;
+        if ARootFolder.IsEmpty then
+          item.Text := GetRelativePath(item.TagString, GroupProjectPath)
+        else
+          item.Text := GetRelativePath(item.TagString, ARootFolder);
+        AToListBox.AddObject(item);
+      end;
+      FGroupHasChanged := true;
+    end;
 end;
 
 procedure TMainForm.CreateGroupProj(const AFileName: string);
 begin
   EditGroupProj;
-  // TODO : à compléter
+
+  edtCurrentProjectsGroup.Text := AFileName;
+
+  edtProjectsRootFolder.Text := tpath.GetDirectoryName(AFileName);
+  SearchProjectsInFolder(edtProjectsRootFolder.Text);
+end;
+
+function TMainForm.DefaultEmbarcaderoProjectsDirectory: string;
+begin
+{$IF Defined(MSWINDOWS)}
+  // TODO : récupérer le dossier des projets par défaut depuis BDSPROJECTSDIR dans la clé "Ordinateur\HKEY_CURRENT_USER\Software\Embarcadero\BDS\23.0\Environment Variables" de la base de registres de Windows
+{$ENDIF}
+  result := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero', 'Studio',
+    'Projects');
+  if not TDirectory.Exists(result) then
+    result := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero', 'Studio',
+      'Projets');
+  // TODO : tester les autres versions traduites de "Projects"
+  if not TDirectory.Exists(result) then
+    result := tpath.combine(tpath.GetDocumentsPath, 'Embarcadero', 'Studio');
 end;
 
 procedure TMainForm.EditGroupProj;
 begin
-  // TODO : init fields
-    // TODO : adapter la taille des 2 layouts
+  edtCurrentProjectsGroup.Text := '';
+  edtProjectsRootFolder.Text := '';
+  lbProjectsInGroup.Clear;
+  lbFoundProjects.Clear;
+
+  lProjectsGroup.Height := TabControl1.Height / 2 - tbMain.Height;
+
+  FGroupHasChanged := false;
+
   TabControl1.ActiveTab := tiEdit;
+end;
+
+procedure TMainForm.ExportProjectsGroup(const AFromList: TListBox;
+  const AToFileName: string);
+var
+  GroupProj: TStringList;
+  i: integer;
+  ProjectPath, ProjectRelPath, ProjectName: string;
+  Targets, CleanTargets, MakeTargets: string;
+begin
+  GroupProj := TStringList.Create;
+  try
+    GroupProj.Add
+      ('<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">');
+    GroupProj.Add('<PropertyGroup>');
+    GroupProj.Add('<ProjectGuid>' + tguid.NewGuid.ToString + '</ProjectGuid>');
+    GroupProj.Add('</PropertyGroup>');
+    GroupProj.Add('<ItemGroup>');
+    for i := 0 to AFromList.count - 1 do
+    begin
+      ProjectPath := AFromList.ListItems[i].TagString;
+      ProjectRelPath := AFromList.ListItems[i].Text;
+      if (not ProjectPath.IsEmpty) and tfile.Exists(ProjectPath) then
+      begin
+        GroupProj.Add('<Projects Include="' + ProjectRelPath + '">');
+        GroupProj.Add('<Dependencies/>');
+        GroupProj.Add('</Projects>');
+      end;
+    end;
+    GroupProj.Add('</ItemGroup>');
+    GroupProj.Add('<ProjectExtensions>');
+    GroupProj.Add
+      ('<Borland.Personality>Default.Personality.12</Borland.Personality>');
+    GroupProj.Add('<Borland.ProjectType/>');
+    GroupProj.Add('<BorlandProject>');
+    GroupProj.Add('<Default.Personality/>');
+    GroupProj.Add('</BorlandProject>');
+    GroupProj.Add('</ProjectExtensions>');
+    Targets := '';
+    for i := 0 to AFromList.count - 1 do
+    begin
+      ProjectPath := AFromList.ListItems[i].TagString;
+      ProjectRelPath := AFromList.ListItems[i].Text;
+      if (not ProjectPath.IsEmpty) and tfile.Exists(ProjectPath) then
+      begin
+        ProjectName := tpath.GetFileNameWithoutExtension(ProjectPath);
+        // TODO : check if the name is already in targets list
+        GroupProj.Add('<Target Name="' + ProjectName + '">');
+        GroupProj.Add('<MSBuild Projects="' + ProjectRelPath + '"/>');
+        GroupProj.Add('</Target>');
+        GroupProj.Add('<Target Name="' + ProjectName + ':Clean">');
+        GroupProj.Add('<MSBuild Projects="' + ProjectRelPath +
+          '" Targets="Clean"/>');
+        GroupProj.Add('</Target>');
+        GroupProj.Add('<Target Name="' + ProjectName + ':Make">');
+        GroupProj.Add('<MSBuild Projects="' + ProjectRelPath +
+          '" Targets="Make"/>');
+        GroupProj.Add('</Target>');
+        if Targets.IsEmpty then
+        begin
+          Targets := ProjectName;
+          CleanTargets := ProjectName + ':Clean';
+          MakeTargets := ProjectName + ':Make';
+        end
+        else
+        begin
+          Targets := Targets + ';' + ProjectName;
+          CleanTargets := CleanTargets + ';' + ProjectName + ':Clean';
+          MakeTargets := MakeTargets + ';' + ProjectName + ':Make';
+        end;
+      end;
+    end;
+    GroupProj.Add('<Target Name="Build">');
+    GroupProj.Add('<CallTarget Targets="' + Targets + '"/>');
+    GroupProj.Add('</Target>');
+    GroupProj.Add('<Target Name="Clean">');
+    GroupProj.Add('<CallTarget Targets="' + CleanTargets + '"/>');
+    GroupProj.Add('</Target>');
+    GroupProj.Add('<Target Name="Make">');
+    GroupProj.Add('<CallTarget Targets="' + MakeTargets + '"/>');
+    GroupProj.Add('</Target>');
+    GroupProj.Add
+      ('<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists(''$(BDS)\Bin\CodeGear.Group.Targets'')"/>');
+    GroupProj.Add('</Project>');
+
+    GroupProj.savetofile(AToFileName);
+  finally
+    GroupProj.free;
+  end;
+end;
+
+procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  if FGroupHasChanged then
+  begin
+    CanClose := false;
+    btnCloseClick(Sender)
+  end;
+  CanClose := true;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -302,7 +506,78 @@ end;
 procedure TMainForm.OpenGroupProj(const AFileName: string);
 begin
   EditGroupProj;
-  // TODO : à compléter
+
+  edtCurrentProjectsGroup.Text := AFileName;
+
+  // TODO : charger + afficher la liste des projets du groupe
+
+  edtProjectsRootFolder.Text := tpath.GetDirectoryName(AFileName);
+  SearchProjectsInFolder(edtProjectsRootFolder.Text);
+end;
+
+procedure TMainForm.SearchProjectsInFolder(const AFolderPath: string);
+  procedure FindProjectsIn(const Path: string; var ProjList: TStringList);
+  var
+    lst: TStringDynArray;
+    i: integer;
+  begin
+    lst := TDirectory.GetFiles(Path);
+    for i := 0 to length(lst) - 1 do
+      if lst[i].ToLower.EndsWith('.dproj', true) or
+        lst[i].ToLower.EndsWith('.cbproj', true) then
+        ProjList.Add(lst[i]);
+    lst := TDirectory.GetDirectories(Path);
+    for i := 0 to length(lst) - 1 do
+      if TDirectory.Exists(lst[i]) then
+        FindProjectsIn(lst[i], ProjList);
+  end;
+
+var
+  sl: TStringList;
+  item: TListBoxItem;
+  i, j: integer;
+  Found: Boolean;
+begin
+  if AFolderPath.IsEmpty or not TDirectory.Exists(AFolderPath) then
+    exit;
+
+  sl := TStringList.Create;
+  try
+    FindProjectsIn(AFolderPath, sl);
+
+    lbFoundProjects.Clear;
+    for i := 0 to sl.count - 1 do
+    begin
+      Found := false;
+      for j := 0 to lbProjectsInGroup.count - 1 do
+        if sl[i] = lbProjectsInGroup.ListItems[j].TagString then
+        begin
+          Found := true;
+          break;
+        end;
+      if not Found then
+      begin
+        item := TListBoxItem.Create(self);
+        item.TagString := sl[i];
+        item.Text := sl[i].Substring(AFolderPath.length + 1);
+        lbFoundProjects.AddObject(item);
+      end;
+    end;
+  finally
+    sl.free;
+  end;
+end;
+
+procedure TMainForm.SelectItemsFromList(const AListBox: TListBox;
+  const Delphi, CBuilder: Boolean);
+var
+  i: integer;
+begin
+  for i := 0 to AListBox.count - 1 do
+    if Delphi and AListBox.Items[i].EndsWith('.dproj', true) then
+      AListBox.ListItems[i].IsChecked := true
+    else if CBuilder and AListBox.Items[i].EndsWith('.cbproj', true) then
+      AListBox.ListItems[i].IsChecked := true;
 end;
 
 procedure TMainForm.TranslateTexts(const Language: string);
@@ -325,6 +600,7 @@ begin
     lblProjectsRootFolder.Text := 'Dossier des projets';
     btnSelectProjectsRootFolder.Text := '...';
     btnSelectProjectsRootFolder.Hint := 'Choisir un dossier';
+    OlfSelectDirectoryDialog1.Text := btnSelectProjectsRootFolder.Hint;
     lblFoundProjects.Text := 'Projets trouvés';
     btnSelectAllFoundProjects.Text := btnSelectAllProjectsFromGroup.Text;
     btnSelectDelphiFoundProjects.Text := btnSelectDelphiProjectsFromGroup.Text;
@@ -350,6 +626,7 @@ begin
     lblProjectsRootFolder.Text := 'Projects folder';
     btnSelectProjectsRootFolder.Text := '...';
     btnSelectProjectsRootFolder.Hint := 'Choose a folder';
+    OlfSelectDirectoryDialog1.Text := btnSelectProjectsRootFolder.Hint;
     lblFoundProjects.Text := 'Found projects';
     btnSelectAllFoundProjects.Text := btnSelectAllProjectsFromGroup.Text;
     btnSelectDelphiFoundProjects.Text := btnSelectDelphiProjectsFromGroup.Text;
@@ -358,6 +635,14 @@ begin
     btnUnselectAllFoundProjects.Text := btnUnselectAllProjectsFromGroup.Text;
     btnAddProjectsToGroup.Text := 'Add to group';
   end;
+end;
+
+procedure TMainForm.UnselectAllItemsFromList(const AListBox: TListBox);
+var
+  i: integer;
+begin
+  for i := 0 to AListBox.count - 1 do
+    AListBox.ListItems[i].IsChecked := false;
 end;
 
 end.
