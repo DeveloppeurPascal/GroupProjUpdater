@@ -1,9 +1,9 @@
 ﻿(* C2PP
   ***************************************************************************
 
-  Link Website Generator
+  GroupProj Updater
 
-  Copyright 2025 Patrick Premartin under AGPL 3.0 license.
+  Copyright 2025 Patrick PREMARTIN under AGPL 3.0 license.
 
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -19,14 +19,14 @@
   Patrick PREMARTIN
 
   Site :
-  https://linkwebsitegenerator.olfsoftware.fr/
+  https://groupprojupdater.olfsoftware.fr/
 
   Project site :
-  https://github.com/DeveloppeurPascal/Link-Website-Generator
+  https://github.com/DeveloppeurPascal/GroupProjUpdater
 
   ***************************************************************************
-  File last update : 2025-07-16T14:42:16.000+02:00
-  Signature : a7e05d88eff192c47eb9481390077ae30493d36a
+  File last update : 2025-07-25T16:07:28.000+02:00
+  Signature : a2461c16d556a3cdce93fa339edf6a46c692ace4
   ***************************************************************************
 *)
 

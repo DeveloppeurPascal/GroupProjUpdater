@@ -1,9 +1,9 @@
 ﻿(* C2PP
   ***************************************************************************
 
-  FMX Tools Starter Kit
+  GroupProj Updater
 
-  Copyright 2024-2025 Patrick Prémartin under AGPL 3.0 license.
+  Copyright 2025 Patrick PREMARTIN under AGPL 3.0 license.
 
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -15,22 +15,18 @@
 
   ***************************************************************************
 
-  A starter kit for your FireMonkey projects in Delphi.
-
-  ***************************************************************************
-
   Author(s) :
   Patrick PREMARTIN
 
   Site :
-  https://fmxtoolsstarterkit.developpeur-pascal.fr/
+  https://groupprojupdater.olfsoftware.fr/
 
   Project site :
-  https://github.com/DeveloppeurPascal/FMX-Tools-Starter-Kit
+  https://github.com/DeveloppeurPascal/GroupProjUpdater
 
   ***************************************************************************
-  File last update : 2025-07-14T16:39:10.000+02:00
-  Signature : e3e5961274dbba03ab06afdff216b231ca59912b
+  File last update : 2025-07-25T16:11:44.000+02:00
+  Signature : 1d3f850994b538429f7304476c9a62c31cf79bce
   ***************************************************************************
 *)
 
