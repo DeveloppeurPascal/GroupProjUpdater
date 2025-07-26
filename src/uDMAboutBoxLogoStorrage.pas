@@ -25,8 +25,8 @@
   https://github.com/DeveloppeurPascal/GroupProjUpdater
 
   ***************************************************************************
-  File last update : 2025-07-25T16:04:02.000+02:00
-  Signature : 0c3bda9dbcadd7b0eb3b5c2043d58ca17dde4162
+  File last update : 2025-07-26T12:46:44.000+02:00
+  Signature : 2c973630668fca01fbc7780bf7e48ec0649f9345
   ***************************************************************************
 *)
 
@@ -34,10 +34,6 @@ unit uDMAboutBoxLogoStorrage;
 
 interface
 
-{$MESSAGE WARN 'Save uDMAboutBoxLogoStorrage.pas in your project folder and to customize it in your project. Don''t change the template version if you want to be able to update it.'}
-// TODO : Save uDMAboutBoxLogoStorrage.pas in your project folder and to customize it in your project. Don't change the template version if you want to be able to update it.
-
-// TODO : when you'll have a logo or icon for your project, don't forget to replace default one by yours in the TImageList
 uses
   System.SysUtils,
   System.Classes,
