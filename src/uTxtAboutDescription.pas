@@ -25,8 +25,8 @@
   https://github.com/DeveloppeurPascal/GroupProjUpdater
 
   ***************************************************************************
-  File last update : 2025-07-25T16:07:28.000+02:00
-  Signature : a2461c16d556a3cdce93fa339edf6a46c692ace4
+  File last update : 2025-07-26T13:13:02.000+02:00
+  Signature : a069b991b775d6cbbd0d86b6aab6a869e74da5ce
   ***************************************************************************
 *)
 
@@ -58,6 +58,8 @@ To work, we can start from a folder or a group of projects to be updated.
 * Credits
 
 This application was developed by Patrick Prémartin.
+
+The Delphi and C++Builder icons are copyrighted by Embarcadero Technologies.
 
 *****************
 * Publisher info
@@ -94,6 +96,8 @@ Pour travailler on peut partir d'un dossier ou d'un groupe de projets à mettre 
 * Remerciements
 
 Cette application a été développée par Patrick Prémartin.
+
+Les logos de Delphi et C++Builder sont la propriété d'Embarcadero Technologies.
 
 *****************
 * Info éditeur
