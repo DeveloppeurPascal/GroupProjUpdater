@@ -25,8 +25,8 @@
   https://github.com/DeveloppeurPascal/GroupProjUpdater
 
   ***************************************************************************
-  File last update : 2025-07-25T16:11:44.000+02:00
-  Signature : 1d3f850994b538429f7304476c9a62c31cf79bce
+  File last update : 2025-07-26T13:08:14.000+02:00
+  Signature : 3b92f4315bb3fd035709207ed9eba3cb2f1f01ce
   ***************************************************************************
 *)
 
@@ -58,7 +58,7 @@ const
   /// <remarks>
   /// To update when you publish a new release of this project.
   /// </remarks>
-  CAboutVersionDate = '20250725';
+  CAboutVersionDate = '20250726';
 
   /// <summary>
   /// Title of your project used in the About box and as the main form caption
@@ -79,7 +79,7 @@ const
   /// The URL where you can buy the software.
   /// (if not empty, a "Buy" button is added in the About Box)
   /// </summary>
-  CSoftwareBuyURL = 'https://store.olfsoftware.fr/logiciels-pour-developpeurs-c-3/developpement-delphi-c-4/groupproj-updater-p-30';
+  CSoftwareBuyURL = 'https://store.olfsoftware.fr/en/developer-software-c-3/delphi-development-c-4/groupproj-updater-p-30';
 
   /// <summary>
   /// Website open by Tools / Support menu option
